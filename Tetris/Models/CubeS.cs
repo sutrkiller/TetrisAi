@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Tetris.Models
 {
-    class CubeS : Cube
+    public class CubeS : Cube
     {
         public CubeS()
         {

@@ -17,8 +17,8 @@ namespace Tetris.Models
                 {
                     new[] {1,1},
                     new[] {1,0},
-                    new[] {1,0},
                     new[] {1,0}
+          
                 } },
                 {2,new[]
                 {
@@ -27,7 +27,6 @@ namespace Tetris.Models
                 } },
                 {3,new[]
                 {
-                    new[] {0,1},
                     new[] {0,1},
                     new[] {0,1},
                     new[] {1,1}

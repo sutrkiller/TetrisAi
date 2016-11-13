@@ -1,0 +1,100 @@
+﻿<Window x:Class="TetrisUi.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TetrisUi"
+        mc:Ignorable="d"
+        Name="WindowMain"
+        Title="MainWindow" Height="583.5" Width="580" SizeToContent="WidthAndHeight" ResizeMode="NoResize" Loaded="WindowMain_Loaded" KeyDown="WindowMain_KeyDown">
+    <Window.Resources>
+        <local:AiRunningConverter x:Key="AiRunningConverter"></local:AiRunningConverter>
+    </Window.Resources>
+    <DockPanel LastChildFill="True" Background="CadetBlue">
+        <Grid DockPanel.Dock="Top" Name="GridTop" Background="CadetBlue" Height="Auto">
+            <TextBlock Text="TetrisAi" HorizontalAlignment="Center" FontSize="18" Margin="0,10" FontWeight="Bold"/>
+        </Grid>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            
+                <Canvas Name="CanvasMain" Width="251" Height="501" Background="Beige" Margin="8,4,8,8"/>
+
+
+            <Grid Grid.Column="1" Background="Bisque" Margin="4" >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <TextBlock Grid.Row="0" Text="Next" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                <Border Grid.Row="1" BorderThickness="1" BorderBrush="Black" MinHeight="64" Width="202" Margin="8">
+                    <Canvas Name="CanvasNext" Width="200" Height="100" Background="White"/>
+                </Border>
+                <Grid Grid.Row="2" Margin="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Cleared lines: " FontSize="14" FontWeight="Bold"/>
+                    <TextBox Grid.Column="1" Text="{Binding ElementName=WindowMain, Path=ClearedLines, Mode=OneWay}" FontSize="16" FontWeight="Bold" Margin="2" Background="Transparent" BorderThickness="0" TextAlignment="Right" VerticalContentAlignment="Center" Padding="4,0"></TextBox>
+                </Grid>
+
+                <Grid Grid.Row="3" Margin="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Played Moves: " FontSize="14" FontWeight="Bold"/>
+                    <TextBox Grid.Column="1" Text="{Binding ElementName=WindowMain, Path=PlayedMoves, Mode=OneWay}" FontSize="16" FontWeight="Bold" Margin="2" Background="Transparent" BorderThickness="0" TextAlignment="Right" VerticalContentAlignment="Center" Padding="4,0"></TextBox>
+                </Grid>
+
+                <Grid Grid.Row="4" Margin="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Played/Cleared ratio: " FontSize="14" FontWeight="Bold"/>
+                    <TextBox Grid.Column="1" Text="{Binding ElementName=WindowMain, Path=Ratio, Mode=OneWay}" FontSize="16" FontWeight="Bold" Margin="2" Background="Transparent" BorderThickness="0" TextAlignment="Right" VerticalContentAlignment="Center" Padding="4,0"></TextBox>
+                </Grid>
+
+                <DockPanel Grid.Row="6" VerticalAlignment="Center" Margin="8,12">
+                    <TextBox BorderThickness="0" Background="Transparent" Padding="0,0,0,12"  Text="{Binding ElementName=SliderSpeedValue, Path=Value, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Right" TextAlignment="Right" FontWeight="Bold" IsReadOnly="True" VerticalContentAlignment="Bottom" Width="40" />
+                    <Label DockPanel.Dock="Top" Content="Speed" HorizontalAlignment="Center" FontWeight="Bold"></Label>
+                    <Slider Focusable="False" Minimum="1" Value="{Binding ElementName=WindowMain, Path=Speed}" Foreground="BlueViolet" VerticalAlignment="Center" Padding="0,4,0,0" BorderBrush="Transparent" Maximum="100" TickPlacement="BottomRight" TickFrequency="5" SmallChange="1" IsSnapToTickEnabled="True" Name="SliderSpeedValue" />
+                </DockPanel>
+
+                <Grid Grid.Row="7" Margin="4,16,4,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Name="ButtonStartAi" Focusable="False" Content="{Binding ElementName=WindowMain, Path=AiRunning, Converter={StaticResource AiRunningConverter}}" Width="92" Height="40" Margin="4" IsDefault="True" FontSize="18" FontWeight="Bold" Background="Transparent" BorderThickness="2" Foreground="Black" BorderBrush="BlueViolet" Click="ButtonStartAi_Click"></Button>
+                    <Button Name="ResetButton" Focusable="False" Grid.Column="1" Content="Reset" Width="92" Height="40" Margin="4" FontSize="18" FontWeight="Bold" Background="Transparent" BorderThickness="2" Foreground="Black"  BorderBrush="BlueViolet" Click="ResetButton_Click"></Button>
+                </Grid>
+
+            </Grid>
+            
+            
+        </Grid>
+    </DockPanel>
+</Window>
+
+
+
+
+
+
+
