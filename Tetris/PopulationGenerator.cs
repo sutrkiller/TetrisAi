@@ -88,7 +88,7 @@ namespace Tetris
                 { 
                     if (counted >= tmpParents.Count)
                     {
-                        parent.PreviousGames = new ConcurrentBag<Tuple<int, int>>();
+                        parent.PreviousGames = new ConcurrentBag<Tuple<int, int, int>>();
                         foreach (var input in inputs)
                         //Parallel.ForEach(inputs, input =>
                         {
@@ -139,7 +139,7 @@ namespace Tetris
                 {
                     if (counted >= tmpChildren.Count)
                     {
-                        child.PreviousGames = new ConcurrentBag<Tuple<int, int>>();
+                        child.PreviousGames = new ConcurrentBag<Tuple<int, int, int>>();
                         foreach (var input in inputs)
                         //Parallel.ForEach(inputs, input =>
                         {
@@ -202,6 +202,8 @@ namespace Tetris
         {
             Func<Ai, int> playedBlocksSelector = ai => ai.PreviousGames.Select(x => x.Item1).Sum(); //ai.PreviousGames.Skip(ai.PreviousGames.Count - _inputsCount).Select(x => x.Item1).Sum();
             Func<Ai, int> clearedLinesSelector = ai => ai.PreviousGames.Select(x => x.Item2).Sum();//ai.PreviousGames.Skip(ai.PreviousGames.Count - _inputsCount).Select(x => x.Item2).Sum();
+            Func<Ai, int> maxHeightSelector = ai => ai.PreviousGames.Select(x => x.Item3).Max();//ai.PreviousGames.Skip(ai.PreviousGames.Count - _inputsCount).Select(x => x.Item2).Sum();
+            Func<Ai, int> maxHeightsSumSelector = ai => ai.PreviousGames.Select(x => x.Item3).Sum();//ai.PreviousGames.Skip(ai.PreviousGames.Count - _inputsCount).Select(x => x.Item2).Sum();
 
             //var players = Enumerable.Range(0, _population).Select((x, i) => GeneratePlayer(i, 0)).ToList();
             var lastGen = Enumerable.Range(0, _generations).Select(x => (int?)x).LastOrDefault(x=>File.Exists(Path.Combine(_outputFolder,$"input_{x}.txt")));
@@ -221,24 +223,11 @@ namespace Tetris
             {
                 var generation1 = generation;
                 Func<Ai, double> selector = x => /*playedBlocksSelector(x) * 2 +*/ clearedLinesSelector(x) + (generation1 - x.Generation) / (double)_generations;
-
-                //if (File.Exists(GetGenerationFilePath(generation)))
-                //{
-                //    players =
-                //        PrepareNextGeneration(
-                //            File.ReadAllLines(GetGenerationFilePath(generation)).Select(x => new Ai(x)).ToList(),
-                //            generation + 1, selector);
-                //    continue;
-                //}
-
-
-                //if (File.Exists(Path.Combine(_outputFolder,$"input_{generation}.txt")))
-                //{
-                //    players =
-                //        //PrepareNextGeneration(
-                //            File.ReadAllLines(GetGenerationFilePath(generation)).Select(x => new Ai(x)).ToList();
-                //    //continue;
-                //}
+//                Func<Ai, double> selector =
+//                    x =>
+//                        -maxHeightSelector(x) - (maxHeightsSumSelector(x)/(_w*_h*_inputsCount)) -
+//                        2.5/(playedBlocksSelector(x)/clearedLinesSelector(x));
+               
 
                 string fileName = Path.Combine(_outputFolder, $"inputsGen_{generation}.txt");
                 
@@ -253,14 +242,6 @@ namespace Tetris
                             Enumerable.Range(0, x.Length)
                                 .Select(i => x.Substring(i, i + _aheadRead >= x.Length ? x.Length - i : _aheadRead))
                                 .ToList()).ToList();
-
-
-                //string tmpFileName = Path.Combine(_outputFolder, "progress.tmp");
-                //if (File.Exists(tmpFileName))
-                //{
-                //    var lines = File.ReadAllLines("progress.tmp");
-                //}
-
                 
                 int counted = 0;
                 tmpFileName = Path.Combine(_outputFolder, $"tmp_{generation}.txt");
@@ -273,7 +254,7 @@ namespace Tetris
                 {
                     if (counted >= tmpPlayers.Count)
                     {
-                        player.PreviousGames = new ConcurrentBag<Tuple<int, int>>();
+                        player.PreviousGames = new ConcurrentBag<Tuple<int, int, int>>();
                         foreach (var input in inputs)
                         //Parallel.ForEach(inputs, input =>
                             {
@@ -288,7 +269,7 @@ namespace Tetris
                     var pl = tmpPlayers[counted];
                     //File.AppendAllLines("progress.tmp",new []{player.ToString()});
                     Console.WriteLine(
-                        $"{generation,5}_{pl.Id,5}: {playedBlocksSelector(pl),6}/{clearedLinesSelector(pl),6} [{pl.Generation,4}]    ({++counted})");
+                        $"{generation,5}_{pl.Id,5}: {playedBlocksSelector(pl),6}/{clearedLinesSelector(pl),6}/{maxHeightSelector(pl),6} [{pl.Generation,4}]    ({++counted})");
                 }
                 players = tmpPlayers;
                 
@@ -298,12 +279,13 @@ namespace Tetris
                 LogString(str,"");
                 LogString(str, $"CL: {generation,5}: Avg: {players.Select(x => clearedLinesSelector(x)).Average(),6}, Min: {players.Select(x => clearedLinesSelector(x)).Min(),6}, Max: {players.Select(x => clearedLinesSelector(x)).Max(),6}");
                 LogString(str, $"PB: {generation,5}: Avg: {players.Select(x => playedBlocksSelector(x)).Average(),6}, Min: {players.Select(x => playedBlocksSelector(x)).Min(),6}, Max: {players.Select(x => playedBlocksSelector(x)).Max(),6}");
+                LogString(str, $"MH: {generation,5}: Avg: {players.Select(x => maxHeightSelector(x)).Average(),6}, Min: {players.Select(x => maxHeightSelector(x)).Min(),6}, Max: {players.Select(x => maxHeightSelector(x)).Max(),6}");
                 LogString(str,"\tRatio: "+ players.Select(x => playedBlocksSelector(x)).Max() / (double)players.Select(x => clearedLinesSelector(x)).Max());
                 var ordered = players.OrderByDescending(selector).ToList();
                 LogString(str,
-                    $"\t{ordered[0].Id}: {playedBlocksSelector(ordered[0])}/{clearedLinesSelector(ordered[0])} [{ordered[0].Generation}] - {string.Join(" ", ordered[0].Factors.Select(x => $"{x:0.00000000}"))}");//{ordered[0].GapsW:0.00000000} {ordered[0].JumpsW:0.00000000} {ordered[0].HeightsW:0.00000000} {ordered[0].FullRowsW:0.00000000}");
+                    $"\t{ordered[0].Id}: {playedBlocksSelector(ordered[0])}/{clearedLinesSelector(ordered[0])}/{maxHeightSelector(ordered[0])} [{ordered[0].Generation}] - {string.Join(" ", ordered[0].Factors.Select(x => $"{x:0.00000000}"))}");//{ordered[0].GapsW:0.00000000} {ordered[0].JumpsW:0.00000000} {ordered[0].HeightsW:0.00000000} {ordered[0].FullRowsW:0.00000000}");
                 LogString(str,
-                    $"\t{ordered[1].Id}: {playedBlocksSelector(ordered[1])}/{clearedLinesSelector(ordered[1])} [{ordered[1].Generation}] - {string.Join(" ", ordered[1].Factors.Select(x => $"{x:0.00000000}"))}");//{ordered[1].GapsW:0.00000000} {ordered[1].JumpsW:0.00000000} {ordered[1].HeightsW:0.00000000} {ordered[1].FullRowsW:0.00000000}");
+                    $"\t{ordered[1].Id}: {playedBlocksSelector(ordered[1])}/{clearedLinesSelector(ordered[1])}/{maxHeightSelector(ordered[1])} [{ordered[1].Generation}] - {string.Join(" ", ordered[1].Factors.Select(x => $"{x:0.00000000}"))}");//{ordered[1].GapsW:0.00000000} {ordered[1].JumpsW:0.00000000} {ordered[1].HeightsW:0.00000000} {ordered[1].FullRowsW:0.00000000}");
                 LogString(str,"");
 
                 File.WriteAllText(GetGenerationFilePath(generation),

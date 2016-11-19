@@ -36,7 +36,7 @@ namespace Tetris
         //public int ClearedLines => _clearedLines;
         //public int PlayedGames => _playedGames;
         public int Generation { get; }
-        public ConcurrentBag<Tuple<int, int>> PreviousGames { get; set; } = new ConcurrentBag<Tuple<int, int>>();
+        public ConcurrentBag<Tuple<int, int, int>> PreviousGames { get; set; } = new ConcurrentBag<Tuple<int,int, int>>();
 
         //private int[][] _grid;
         private readonly int _h;
@@ -74,10 +74,10 @@ namespace Tetris
             var parts = csvLine.Split(';');
             Id = Convert.ToInt32(parts[0]);
             Generation = Convert.ToInt32(parts[1]);
-            PreviousGames = new ConcurrentBag<Tuple<int, int>>(parts[2].Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(x =>
+            PreviousGames = new ConcurrentBag<Tuple<int, int,int>>(parts[2].Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(x =>
                {
                    var tmp = x.Split('/');
-                   return new Tuple<int, int>(Convert.ToInt32(tmp[0]), Convert.ToInt32(tmp[1]));
+                   return new Tuple<int, int, int>(Convert.ToInt32(tmp[0]), Convert.ToInt32(tmp[1]), tmp.Length > 2 ? Convert.ToInt32(tmp[2]) : 0);
                }));
             //_playedBlocks = PreviousGames.LastOrDefault()?.Item1 ?? 0;
             //_clearedLines = PreviousGames.LastOrDefault()?.Item2 ?? 0;
@@ -110,13 +110,13 @@ namespace Tetris
 
         public void EndRound(int keepGames)
         {
-            PreviousGames = new ConcurrentBag<Tuple<int, int>>(PreviousGames.Skip(PreviousGames.Count - keepGames));
+            PreviousGames = new ConcurrentBag<Tuple<int, int, int>>(PreviousGames.Skip(PreviousGames.Count - keepGames));
             //_playedBlocks = 0;
             //_clearedLines = 0;
             //_playing = false;
         }
 
-        public Tuple<int, int> PlayOneMove(string input, ref int[][] grid, ref int playedBlocks, ref int clearedLines, bool writeDebug = false)
+        public Tuple<int, int> PlayOneMove(string input, ref int[][] grid, ref int playedBlocks, ref int clearedLines, ref int maxHeight, bool writeDebug = false)
         {
             //if (!_playing) throw new InvalidOperationException("Game has to be started first.");
             if (writeDebug) Console.WriteLine($">> {input}");
@@ -132,11 +132,13 @@ namespace Tetris
                 //_playing = false;
                 //_playedGames++;
                 Interlocked.Increment(ref _playedGames);
-                PreviousGames.Add(new Tuple<int, int>(playedBlocks, clearedLines));
+                PreviousGames.Add(new Tuple<int, int, int>(playedBlocks, clearedLines, maxHeight));
 
                 return null;
             }
             var delRows = DeleteRows(ref grid);
+            var mHeight = ColumnHeights(grid).Max();
+            if (maxHeight < mHeight) maxHeight = mHeight;
             clearedLines += delRows.Count;
             ++playedBlocks;
             //Console.WriteLine(DrawArray(_grid));
@@ -177,23 +179,24 @@ namespace Tetris
             return new Tuple<int, int,int>(next.Item3.Item1, next.Item3.Item2, lowest);
         }
 
-        public Tuple<int, int> PlayMoreMoves(IEnumerable<string> inputs, ref int[][] grid)
+        public Tuple<int, int,int> PlayMoreMoves(IEnumerable<string> inputs, ref int[][] grid)
         {
             //if (!_playing) throw new InvalidOperationException("Game has to be started first.");
             var playedBlocks = 0;
             var clearedLines = 0;
+            var maxHeight = 0;
             var playing = true;
             foreach (var t in inputs)
             {
-                if (PlayOneMove(t, ref grid, ref playedBlocks, ref clearedLines) != null)
+                if (PlayOneMove(t, ref grid, ref playedBlocks, ref clearedLines, ref maxHeight) != null)
                 {
-                    //Console.WriteLine(playedBlocks);
+                    Console.WriteLine(playedBlocks);
                     continue;
                 }
                 playing = false;
                 break;
             }
-            var result = new Tuple<int, int>(playedBlocks, clearedLines);
+            var result = new Tuple<int, int, int>(playedBlocks, clearedLines, maxHeight);
             if (playing)
             {
                 Interlocked.Increment(ref _playedGames);
@@ -201,6 +204,7 @@ namespace Tetris
                 PreviousGames.Add(result);
             }
             return result;
+            //return result;
         }
 
         private string DrawArray(int[][] grid)
@@ -445,7 +449,7 @@ namespace Tetris
         {
             return
                 string.Format(
-                    $"{Id};{Generation};{string.Join(",", PreviousGames.Select(x => $"{x.Item1}/{x.Item2}"))};{string.Join(";", Factors.Select(x => $"{x:0.00000000}"))}");
+                    $"{Id};{Generation};{string.Join(",", PreviousGames.Select(x => $"{x.Item1}/{x.Item2}/{x.Item3}"))};{string.Join(";", Factors.Select(x => $"{x:0.00000000}"))}");
             //{GapsW:0.00000000};{JumpsW:0.00000000};{HeightsW:0.00000000};{FullRowsW:0.00000000}");
         }
     }

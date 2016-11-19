@@ -9,6 +9,7 @@
         Title="MainWindow" Height="583.5" Width="580" SizeToContent="WidthAndHeight" ResizeMode="NoResize" Loaded="WindowMain_Loaded" KeyDown="WindowMain_KeyDown">
     <Window.Resources>
         <local:AiRunningConverter x:Key="AiRunningConverter"></local:AiRunningConverter>
+        <local:FalseToVisibleConverter x:Key="BooleanToVisibilityConverter"/>
     </Window.Resources>
     <DockPanel LastChildFill="True" Background="CadetBlue">
         <Grid DockPanel.Dock="Top" Name="GridTop" Background="CadetBlue" Height="Auto">
@@ -21,8 +22,10 @@
             </Grid.ColumnDefinitions>
             
             
-                <Canvas Name="CanvasMain" Width="251" Height="501" Background="Beige" Margin="8,4,8,8"/>
-
+                <Canvas Name="CanvasMain" Width="251" Height="501" Background="Beige" Margin="8,4,8,8">
+                    
+                </Canvas>
+            <TextBlock VerticalAlignment="Center" Margin="24,0,0,0" Foreground="Gold" FontSize="36" FontWeight="Bold" Visibility="{Binding ElementName=WindowMain, Path=Ended, Converter={StaticResource BooleanToVisibilityConverter}}">Game Over!!!</TextBlock>
 
             <Grid Grid.Column="1" Background="Bisque" Margin="4" >
                 <Grid.ColumnDefinitions>

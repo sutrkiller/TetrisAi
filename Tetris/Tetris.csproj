@@ -59,7 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Ai.cs" />
-    <Compile Include="AiNew.cs" />
+    <Compile Include="AiFinal.cs" />
     <Compile Include="CustomExtensions.cs" />
     <Compile Include="GenerateInput.cs" />
     <Compile Include="Models\CubeI.cs" />
@@ -71,6 +71,7 @@
     <Compile Include="Models\CubeZ.cs" />
     <Compile Include="Models\Cube.cs" />
     <Compile Include="Models\Grid.cs" />
+    <Compile Include="Models\NextMove.cs" />
     <Compile Include="PopulationGenerator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

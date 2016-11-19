@@ -27,7 +27,9 @@ namespace TetrisUi
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        private double[] _fact = "-0.42435896;-0.40373507;-0.24916250;-0.35100899;-0.04735175;-0.16013334;-0.52438617;-0.39126965;-0.12518200"
+        private double[] _fact =
+            "-0.20246807;-0.37864260;-0.56586424;-0.01309536;0.21249134;-0.33714135;-0.50522643;-0.08181478;-0.27294390"
+            //"-0.34939090;-0.28973177;-0.36981444;-0.41017038;0.02703165;-0.46784607;-0.23669553;-0.21747398;-0.40749071"
             .Split(';').Select(Convert.ToDouble).ToArray();
         //private int[][] _grid;
         private Grid _grid;
@@ -118,12 +120,12 @@ namespace TetrisUi
         private int _playedMoves;
         private bool _aiRunning = true;
         private bool _ended;
-        private Ai _ai;
+        //private Ai _ai;
+        private readonly AiFinal _ai = new AiFinal();
 
         public MainWindow()
         {
             InitializeComponent();
-             _ai = new Ai(_fact);
         }
 
         private void DrawNext()
@@ -153,7 +155,7 @@ namespace TetrisUi
             _currentTask = Task.Run(() =>
             {
                 if (_ai == null) return;
-                var next = _ai.PlayOneMove(Current.GetType().Name.Reverse().First()+""+ Next.GetType().Name.Reverse().First(), _grid.Clone().Cells);
+                var next = _ai.DiscoverNextMove(_grid, new List<Cube>() {Current, Next});
                 if (next == null)
                 {
                     Dispatcher.Invoke(() =>
@@ -165,17 +167,17 @@ namespace TetrisUi
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        Column = next.Item1;
-                        Rotation = next.Item2;
+                        Column = next.Column;
+                        Rotation = next.Rotation;
                     });
-                    while (!Ended && Row < next.Item3)
+                    while (!Ended && Row < next.Row)
                     {
                         Dispatcher.Invoke(() =>
                         {
                             Row++;
                             DrawCurrent();
                         });
-                        Thread.Sleep((101-Speed)*5);
+                        Thread.Sleep((101-Speed)*1);
                     }
                 }
                 if (Row < 0)
@@ -398,12 +400,6 @@ namespace TetrisUi
 
             this.Focusable = !AiRunning;
             Focus();
-            if (AiRunning)
-            {
-                _ai = new Ai( _fact); 
-            }
-
-
         }
     }
 }
